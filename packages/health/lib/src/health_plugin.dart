@@ -608,6 +608,30 @@ class Health {
     return success ?? false;
   }
 
+  /// Deletes a specific health record by its Client Record Id.
+  ///
+  /// Returns true if successful, false otherwise.
+  ///
+  /// Parameters:
+  ///  * [clientRecordIds] - The list of client record ids to delete.
+  ///  * [type] - The health data type of the record. Required on iOS.
+  ///
+    Future<bool> deleteByClientRecordId({
+    required HealthDataType type,
+    List<String> idList = const [],
+    List<String> clientRecordIdsList = const [],
+  }) async {
+    await _checkIfHealthConnectAvailableOnAndroid();
+
+    Map<String, dynamic> args = {
+      'dataTypeKey': type.name,
+      'idList': idList,
+      'clientRecordIdsList': clientRecordIdsList
+    };
+    bool? success = await _channel.invokeMethod('deleteByIds', args);
+    return success ?? false;
+  }
+
   /// Saves a blood pressure record.
   ///
   /// Returns true if successful, false otherwise.

@@ -172,6 +172,7 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             "writeMenstruationFlow" -> writeMenstruationFlow(call, result)
             "writeMeal" -> writeMeal(call, result)
             "deleteByUUID" -> deleteByUUID(call, result)
+            "deleteByIds" -> deleteDataByIds(call, result)
             else -> result.notImplemented()
         }
     }
@@ -2573,8 +2574,28 @@ class HealthPlugin(private var channel: MethodChannel? = null) :
             }
         }
     }
-    
-    
+
+    /** Delete records of the given type by Ids */
+    private fun deleteDataByIds(call: MethodCall, result: Result) {
+        val type = call.argument<String>("dataTypeKey")!!
+        val idList = call.argument<List<String>>("idList") ?: emptyList()
+        val clientRecordIdsList = call.argument<List<String>>("clientRecordIdsList") ?: emptyList()
+        if (!mapToType.containsKey(type)) {
+            Log.w("FLUTTER_HEALTH::ERROR", "Datatype $type not found in HC")
+            result.success(false)
+            return
+        }
+        val classType = mapToType[type]!!
+
+        scope.launch {
+            try {
+                healthConnectClient.deleteRecords(classType, idList, clientRecordIdsList)
+                result.success(true)
+            } catch (e: Exception) {
+                result.success(false)
+            }
+        }
+    }
 
     private val mapSleepStageToType =
         hashMapOf(
